@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import csv
 from sklearn import linear_model
 from sklearn.linear_model import SGDClassifier
+from sklearn import svm
+import cPickle, gzip
 
 # data from https://onlinecourses.science.psu.edu/stat857/node/223
 # paper http://www.sciencedirect.com/science/article/pii/S0167923609001377
@@ -44,14 +46,24 @@ print N, M
 
 clf = linear_model.Ridge(alpha=0.5)
 fit = clf.fit(X,Y)
-print fit
-print fit.coef_
+# print fit
+# print fit.coef_
 y_ = clf.predict(X)
-print zip(Y,y_)
+# print zip(Y,y_)
 print "R^2 score:", clf.score(X,Y)
+num_correct = sum(int(round(a) == y) for a, y in zip(y_, Y))
+print "Ridge correct", num_correct
+
 
 clf = SGDClassifier(loss="log", penalty="l2", shuffle=True)
 fit = clf.fit(X, Y)
-print fit
+# print fit
 num_mis = sum([pair[0]!=pair[1] for pair in zip(clf.predict(X), Y)])
-print "missed", num_mis, "out of", len(Y)
+print "SGD correct", len(Y)-num_mis, "out of", len(Y)
+
+clf = svm.SVC()
+clf.fit(X, Y)
+# test
+predictions = [int(a) for a in clf.predict(X)]
+num_correct = sum(int(a == y) for a, y in zip(predictions, Y))
+print "SVM %s of %s values correct." % (num_correct, len(Y))
