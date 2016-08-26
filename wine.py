@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 import csv
 from sklearn import linear_model
 from sklearn.linear_model import SGDClassifier
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
 import cPickle, gzip
 
 # data from https://onlinecourses.science.psu.edu/stat857/node/223
@@ -22,48 +25,87 @@ variable with possible ranking from 1 (worst) to 10 (best). Each
 variety of wine is tasted by three independent tasters and the final
 rank assigned is the median rank given by the tasters.
 """
-with open("Training50_winedata.csv", "rb") as csvfile:
-    f = csv.reader(csvfile, dialect='excel')
-    X = []
-    Y = []
-    i = 0
-    for row in f:
-        if i == 0:
-            headers = row
-        else:
-            Y.append(int(row[len(row)-1]))
-            row = [float(col) for col in row[0:-1]]
-            X.append(np.array(row))
-        i += 1
 
-print headers
+def getdata(filename):
+    with open(filename, "rb") as csvfile:
+        f = csv.reader(csvfile, dialect='excel')
+        X = []
+        Y = []
+        i = 0
+        for row in f:
+            if i == 0:
+                headers = row
+            else:
+                Y.append(int(row[len(row) - 1]))
+                row = [float(col) for col in row[0:-1]]
+                X.append(np.array(row))
+            i += 1
+    return X, Y, headers
+
+X, Y, headers = getdata("Training50_winedata.csv")
+testX, testY, headers = getdata("Test50_winedata.csv")
+
 N = len(X)
 M = len(X[0])
 X = np.array(X)
-print X
-print Y
-print N, M
+print "%d exemplars, %d variables" % (N, M)
 
-clf = linear_model.Ridge(alpha=0.5)
+clf = linear_model.Ridge(alpha=1.5)
 fit = clf.fit(X,Y)
-# print fit
-# print fit.coef_
 y_ = clf.predict(X)
-# print zip(Y,y_)
-print "R^2 score:", clf.score(X,Y)
-num_correct = sum(int(round(a) == y) for a, y in zip(y_, Y))
+print "Ridge R^2 score:", clf.score(X,Y)
+num_correct = sum(round(a) == y for a, y in zip(y_, Y))
 print "Ridge correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "Ridge test correct", num_correct
 
+clf = KernelRidge(alpha=0.5)
+clf.fit(X,Y)
+y_ = clf.predict(X)
+print "KernelRidge R^2 score:", clf.score(X,Y)
+num_correct = sum(round(a) == y for a, y in zip(y_, Y))
+print "KernelRidge correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "KernelRidge test correct", num_correct
 
-clf = SGDClassifier(loss="log", penalty="l2", shuffle=True)
-fit = clf.fit(X, Y)
-# print fit
-num_mis = sum([pair[0]!=pair[1] for pair in zip(clf.predict(X), Y)])
-print "SGD correct", len(Y)-num_mis, "out of", len(Y)
+clf = SGDClassifier(loss="hinge", penalty="l2", shuffle=True)
+clf.fit(X, Y)
+y_ = clf.predict(X)
+print "SGD hinge R^2 score:", clf.score(X,Y)
+num_correct = sum(pair[0]==pair[1] for pair in zip(y_, Y))
+print "SGD hinge correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "SGD hinge test correct", num_correct
+
+clf = KNeighborsClassifier(11, weights='distance')
+clf.fit(X, Y)
+y_ = clf.predict(X)
+print "KNeighbors R^2 score:", clf.score(X,Y)
+num_correct = sum(pair[0]==pair[1] for pair in zip(y_, Y))
+print "KNeighbors correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "KNeighbors test correct", num_correct
+
+clf = RandomForestClassifier(n_estimators=30)
+clf.fit(X, Y)
+y_ = clf.predict(X)
+print "RandomForest R^2 score:", clf.score(X,Y)
+num_correct = sum(pair[0]==pair[1] for pair in zip(y_, Y))
+print "RandomForest correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "RandomForest test correct", num_correct
 
 clf = svm.SVC()
 clf.fit(X, Y)
-# test
-predictions = [int(a) for a in clf.predict(X)]
-num_correct = sum(int(a == y) for a, y in zip(predictions, Y))
-print "SVM %s of %s values correct." % (num_correct, len(Y))
+y_ = clf.predict(X)
+print "SVM R^2 score:", clf.score(X,Y)
+num_correct = sum(a == y for a, y in zip(y_, Y))
+print "SVM correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "SVM test correct", num_correct
