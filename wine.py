@@ -8,6 +8,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 import cPickle, gzip
 
 # data from https://onlinecourses.science.psu.edu/stat857/node/223
@@ -99,6 +100,20 @@ print "RandomForest correct", num_correct
 y_ = clf.predict(testX)
 num_correct = sum(round(a) == y for a, y in zip(y_, testY))
 print "RandomForest test correct", num_correct
+
+clf = GradientBoostingClassifier(n_estimators=100)
+clf.fit(X, Y)
+y_ = clf.predict(X)
+print "GradientBoosting R^2 score:", clf.score(X,Y)
+num_correct = sum(pair[0]==pair[1] for pair in zip(y_, Y))
+print "GradientBoosting correct", num_correct
+y_ = clf.predict(testX)
+num_correct = sum(round(a) == y for a, y in zip(y_, testY))
+print "GradientBoosting test correct", num_correct
+feature_importance = clf.feature_importances_
+# make importances relative to max importance
+feature_importance = 100.0 * (feature_importance / feature_importance.max())
+print zip(headers,feature_importance)
 
 clf = svm.SVC()
 clf.fit(X, Y)
