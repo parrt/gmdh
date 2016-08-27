@@ -55,6 +55,9 @@ def onehot(i,N=10):
     v[i] = 1
     return v
 
+def softmax(a):
+    return np.exp(a) / np.sum(np.exp(a))
+
 # Load the dataset
 f = gzip.open('/Users/parrt/data/mnist.pkl.gz', 'rb')
 train_set, valid_set, test_set = cPickle.load(f)
@@ -74,4 +77,10 @@ Y = [onehot(lab) for lab in labels]
 net = Network([784,15,10])
 net.train(X, Y)
 
-print net.cost(X, Y)
+# print net.cost(X, Y)
+
+y_ = net.feedforward(X[0])
+print y_
+print [float("%4.3f" % s) for s in softmax(y_)]
+y_ = np.argmax(softmax(y_))
+print "predict", y_, "label is", labels[0]
