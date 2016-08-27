@@ -1,5 +1,6 @@
 import numpy as np
 import gzip, cPickle
+from numpy import linalg as LA
 
 # Deriving my own simple neural net from
 # https://github.com/mnielsen/neural-networks-and-deep-learning/blob/master/src/network.py
@@ -18,7 +19,7 @@ class Network(object):
         ever used in computing the outputs from later layers."""
         self.num_layers = len(layer_sizes)
         self.sizes = layer_sizes
-        self.biases = [np.squeeze(np.random.randn(1,y)) for y in layer_sizes[1:]]
+        self.biases = [np.random.randn(y) for y in layer_sizes[1:]]
         # E.g., weights[0] is the W weight matrix between input and 1st hidden layer
         # biases[0] is the b vector of biases for 1st hidden layer
         # W[j][k] is weight from neuron k to neuron j in prior layer
@@ -31,8 +32,7 @@ class Network(object):
         for layer in range(len(self.biases)):  # for each layer
             b = self.biases[layer]
             weights = self.weights[layer]
-            weighted_outputs = np.dot(weights, activations)
-            weighted_outputs += b
+            weighted_outputs = np.dot(weights, activations) + b
             activations = rectified_linear(weighted_outputs)
         return activations
 
@@ -41,12 +41,19 @@ class Network(object):
         return
 
     def cost(self,X, Y):
+        sum = 0.0
         for x in X:
             y_ = self.feedforward(x)
-            print y_
+            sum += LA.norm(y_ - Y)**2
+        return sum/(2*len(X))
 
 def rectified_linear(activations):
     return np.array([max(0,a) for a in activations])
+
+def onehot(i,N=10):
+    v = np.zeros(N)
+    v[i] = 1
+    return v
 
 # Load the dataset
 f = gzip.open('/Users/parrt/data/mnist.pkl.gz', 'rb')
@@ -62,9 +69,7 @@ img = images[1]
 N = 4
 X = images[0:N]
 # Make one-hot-vectors
-Y = np.zeros((N,10))
-for i in range(N):
-    Y[i][labels[i]] = 1
+Y = [onehot(lab) for lab in labels]
 
 net = Network([784,15,10])
 net.train(X, Y)
