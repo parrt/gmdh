@@ -21,23 +21,23 @@ class Network(object):
         self.num_layers = len(layer_sizes)
         self.sizes = layer_sizes
         if mu is None or sigma is None:
-            self.biases = [np.random.randn(y) for y in layer_sizes[1:]]
+            self.biases = np.array([np.random.randn(y) for y in layer_sizes[1:]])
             # E.g., weights[0] is the W weight matrix between input and 1st hidden layer
             # biases[0] is the b vector of biases for 1st hidden layer
             # W[j][k] is weight from neuron k to neuron j in prior layer
             # W . a + b is output of all neurons in a layer
-            self.weights = [np.random.randn(y, x)
-                            for x, y in zip(layer_sizes[:-1], layer_sizes[1:])]
+            self.weights = np.array([np.random.randn(y, x)
+                                     for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
         else:
-            self.biases = [sigma*np.random.randn(y) for y in layer_sizes[1:]]
+            self.biases = np.array([sigma * np.random.randn(y) for y in layer_sizes[1:]])
             self.biases = np.add(self.biases, mu[0])
             # E.g., weights[0] is the W weight matrix between input and 1st hidden layer
             # biases[0] is the b vector of biases for 1st hidden layer
             # W[j][k] is weight from neuron k to neuron j in prior layer
             # W . a + b is output of all neurons in a layer
-            self.weights = [sigma*np.random.randn(y, x)
-                            for x, y in zip(layer_sizes[:-1], layer_sizes[1:])]
-            self.weights = np.add(self.weights,mu[1])
+            self.weights = np.array([sigma * np.random.randn(y, x)
+                                     for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
+            self.weights = np.add(self.weights, mu[1])
 
     def feedforward(self, activations):
         """Return the output of the network if ``a`` is input."""
@@ -107,7 +107,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 1000
+N = 100
 # N = len(images)
 X = images[0:N]
 # Make one-hot-vectors
@@ -121,16 +121,22 @@ net = Network([784,15,10])
 NGENERATIONS = 200
 NPARTICLES = 20
 
+learning_rate = 1000
+
 mu = None
 for gen in range(NGENERATIONS):
+    (maxfit_this_gen,gennet) = (0,None)
     for p in range(NPARTICLES):
         net = Network([784,15,10], mu=mu, sigma=1)
         fit = net.fitness(X, labels)
-        # if fit>maxfit_this_gen:
-        #     (maxfit_this_gen,whichnet) = (fit,net)
+        if fit>maxfit_this_gen:
+            (maxfit_this_gen,gennet) = (fit,net)
         if fit>maxfit:
             (maxfit,whichnet) = (fit,net)
-    mu = whichnet.biases, whichnet.weights
+    delta = gennet.biases-whichnet.biases, gennet.weights-whichnet.weights
+    delta = learning_rate * delta
+    # print delta
+    mu = whichnet.biases+delta[0], whichnet.weights+delta[1] # adding delta seems to help convergence
     print "max fitness this gen %d" % maxfit
 
 print "max fitness %d/%d" % (maxfit,N)
