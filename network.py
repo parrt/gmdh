@@ -71,7 +71,7 @@ class Network(object):
     def fitness(self,X, labels):
         MINIBATCH = len(X)
         # MINIBATCH = 1000
-        indexes = np.random.randint(0,len(X),size=MINIBATCH)
+        # indexes = np.random.randint(0,len(X),size=MINIBATCH)
         # sample = X[indexes]
         # labels = labels[indexes]
         correct = 0

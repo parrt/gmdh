@@ -25,45 +25,33 @@ from numpy import array
 from random import random
 from math import sin, sqrt
 
-iter_max = 10000
-pop_size = 100
-dimensions = 2
-c1 = 2
-c2 = 2
-err_crit = 0.00001
+ITERATIONS = 1000
+SWARM_SIZE = 20
+dimensions = len(images[0])
+
+class Particle:
+    def __init__(self, net):
+        self.net = net
+        self.best = net
+        self.best_score = 0
+    pass
 
 #initialize the particles
-particles = []
-for i in range(pop_size):
-    p = Network([784,15,10])
-    p.fitness_score = 0.0
-    p.v = 0.0
-    particles.append(p)
-
-# let the first particle be the global best
+particles = [Particle(Network([784,15,10])) for i in range(SWARM_SIZE)]
 gbest = particles[0]
-err = 999999999
-while i < iter_max :
-    for p in particles:
-        fitness = p.fitness(X, labels)
-        # fitness,err = p.fitness(p.params)
-        if fitness > p.fitness_score:
-            p.fitness_score = fitness
-            p.best_biases = p.biases
-            p.best_weights = p.weights
 
-        if fitness > gbest.fitness_score:
-            gbest = p
-        v = p.v + c1 * random() * (p.best_biases - p.best_biases) \
-                + c2 * random() * (gbest.best_biases - p.best_biases)
-        p.best_biases = p.best_biases + v
-        v = p.v + c1 * random() * (p.best_weights - p.best_weights) \
-                + c2 * random() * (gbest.best_weights - p.best_weights)
-        p.best_weights = p.best_weights + v
-
-    i  += 1
-    if err < err_crit:
-        break
-    #progress bar. '.' = 10%
-    if i % (iter_max/10) == 0:
-        print '.'
+mu = None
+sigma = None
+for it in range(ITERATIONS):
+    for p in range(SWARM_SIZE):
+        ff = particles[p].best.weights.reshape(1)
+        location = np.array(particles[p].best.biases + ff)
+        pmu = particles[p].best.biases + gbest.best.biases, \
+              particles[p].best.weights + gbest.best.weights
+        # pmu = pmu[0] / 2.0, pmu[1] / 2.0
+        # psigma = np.norm(particles[p].best.biases - gbest.best.biases  \
+        #          particles[p].best.weights - gbest.best.weights
+        # net = Network([784, 15, 10], mu=pmu, sigma=sigma)
+        # fit = net.fitness(X, labels)
+        # if fit > particles[p].best_score:
+        #     (maxfit_this_gen, gennet) = (fit, net)

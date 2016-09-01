@@ -15,9 +15,10 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 100
+N = 1000
 # N = len(images)
 X = images[0:N]
+Y = labels[0:N]
 # Make one-hot-vectors
 # Y = [onehot(lab) for lab in labels[0:N]]
 print "N =",N,":",Counter(labels[0:N])
@@ -37,11 +38,15 @@ for gen in range(NGENERATIONS):
     (maxfit_this_gen,gennet) = (0,None)
     for p in range(NPARTICLES):
         net = Network([784,15,10], mu=mu, sigma=1)
-        fit = net.fitness(X, labels)
+
+        # MINIBATCH = 100
+        # indexes = np.random.randint(0,len(X),size=MINIBATCH)
+        # fit = net.fitness(X[indexes], Y[indexes])
+        fit = net.fitness(X, Y)
         if fit>maxfit_this_gen:
             (maxfit_this_gen,gennet) = (fit,net)
-        if fit>maxfit:
-            (maxfit,whichnet) = (fit,net)
+    if fit>maxfit:
+        (maxfit,whichnet) = (fit,net)
     delta = gennet.biases-whichnet.biases, gennet.weights-whichnet.weights
     # sigma = np.abs(delta)
     delta = learning_rate * delta
