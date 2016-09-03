@@ -30,14 +30,15 @@ class Network(object):
             self.weights = np.array([np.random.randn(y, x)
                                      for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
         else:
-            self.biases = np.array([sigma * np.random.randn(y) for y in layer_sizes[1:]])
+            self.biases = np.array([sigma[0][i-1] * np.random.randn(layer_sizes[i])
+                                    for i in range(1,len(layer_sizes))])
             self.biases = np.add(self.biases, mu[0])
-            # E.g., weights[0] is the W weight matrix between input and 1st hidden layer
-            # biases[0] is the b vector of biases for 1st hidden layer
-            # W[j][k] is weight from neuron k to neuron j in prior layer
-            # W . a + b is output of all neurons in a layer
-            self.weights = np.array([sigma * np.random.randn(y, x)
-                                     for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
+            w = []
+            for i in range(1, len(layer_sizes)):
+                w.append( sigma[1][i-1] * np.random.randn(layer_sizes[i], layer_sizes[i-1]) )
+            self.weights = np.array(w)
+            # self.weights = np.array([sigma[1] * np.random.randn(y, x)
+            #                          for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
             self.weights = np.add(self.weights, mu[1])
 
     def feedforward(self, activations):

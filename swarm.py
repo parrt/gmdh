@@ -26,32 +26,42 @@ from random import random
 from math import sin, sqrt
 
 ITERATIONS = 1000
-SWARM_SIZE = 20
+SWARM_SIZE = 10
 dimensions = len(images[0])
 
 class Particle:
     def __init__(self, net):
-        self.net = net
+        self.pos = net
         self.best = net
         self.best_score = 0
     pass
 
 #initialize the particles
-particles = [Particle(Network([784,15,10])) for i in range(SWARM_SIZE)]
-gbest = particles[0]
+particles = [Particle(Network([784,30,10])) for i in range(SWARM_SIZE)]
 
-mu = None
+mu = particles[0].pos
 sigma = None
 for it in range(ITERATIONS):
-    for p in range(SWARM_SIZE):
-        ff = particles[p].best.weights.reshape(1)
-        location = np.array(particles[p].best.biases + ff)
-        pmu = particles[p].best.biases + gbest.best.biases, \
-              particles[p].best.weights + gbest.best.weights
-        # pmu = pmu[0] / 2.0, pmu[1] / 2.0
-        # psigma = np.norm(particles[p].best.biases - gbest.best.biases  \
-        #          particles[p].best.weights - gbest.best.weights
-        # net = Network([784, 15, 10], mu=pmu, sigma=sigma)
-        # fit = net.fitness(X, labels)
-        # if fit > particles[p].best_score:
-        #     (maxfit_this_gen, gennet) = (fit, net)
+    # update global best with best of all particles
+    gbest = particles[0].best
+    gbest_score = particles[0].best_score
+    for i in range(SWARM_SIZE):
+        p = particles[i]
+        if p.best_score > gbest_score:
+            gbest = p.best
+            gbest_score = p.best_score
+    print "global best score " + str(gbest_score)
+
+    for i in range(SWARM_SIZE):
+        p = particles[i]
+        pmu = p.best.biases + gbest.biases, \
+              p.best.weights + gbest.weights
+        pmu = pmu[0] / 2.0, pmu[1] / 2.0
+        psigma = np.abs(p.best.biases - gbest.biases), \
+                 np.abs(p.best.weights - gbest.weights)
+        pos = Network([784,30,10], mu=pmu, sigma=psigma)
+        p.pos = pos
+        fit = pos.fitness(X, labels)
+        if fit > p.best_score:
+            p.best = pos
+            p.best_score = fit

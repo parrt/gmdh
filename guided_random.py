@@ -61,11 +61,8 @@ for gen in range(NGENERATIONS):
         # print delta
         mu = globalnet.biases + delta[0], globalnet.weights + delta[1] # adding delta seems to help convergence
         # mu = gennet
-        sigma = 1 # scale back search area upon a win
     else:
         # if no match, widen search area
-        sigma *= 1.01
-        print "sigma "+str(sigma)
         pass # do reverse vector of worst in gen
     print "%d: max fitness %d" % (gen, globalnet.fitness(X, Y))
 
