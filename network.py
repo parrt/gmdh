@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import gzip, cPickle
 from numpy import linalg as LA
@@ -61,12 +62,15 @@ class Network(object):
             print "predict", y_, "label is", y
         return
 
-    def cost(self,X, Y):
+    def cost(self, X, labels):
         sum = 0.0
-        for x in X:
-            y_ = self.feedforward(x)
-            sum += LA.norm(y_ - Y)**2
-        return sum/(2*len(X))
+        for x,y in zip(X, labels):
+            activations = self.feedforward(x)
+            y_ = softmax(activations)
+            diff = y_ - onehot(y)
+            norm = LA.norm(diff)
+            sum += norm * norm
+        return sum/len(X)
 
     def fitness(self,X, labels):
         MINIBATCH = len(X)
@@ -80,7 +84,8 @@ class Network(object):
             x = X[i]
             y = labels[i]
             y_ = self.feedforward(x)
-            y_ = np.argmax(softmax(y_))
+            # y_ = np.argmax(softmax(y_))
+            y_ = np.argmax(y_)
             if y_==y: correct += 1
         return correct
 
@@ -91,6 +96,11 @@ def onehot(i,N=10):
     v = np.zeros(N)
     v[i] = 1
     return v
+
+# def softmax(x):
+#     e = [np.exp(a) for a in x]
+#     s = np.sum(e)
+#     return [a / s for a in x]
 
 def softmax(a):
     return np.exp(a) / np.sum(np.exp(a))
