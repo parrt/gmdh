@@ -7,6 +7,40 @@ from collections import Counter
 # Deriving my own simple neural net from
 # https://github.com/mnielsen/neural-networks-and-deep-learning/blob/master/src/network.py
 
+parameter_to_index_map = []  # map parameter index to (i,j) in biases or (i,j,k) in weights
+first_weight_index = 0       # parameter index where weights start
+
+def biases_size(topology):
+    n = 0
+    for layer in range(1,len(topology)):
+        n += topology[layer]  # biases
+    return n
+
+def weights_size(topology):
+    n = 0
+    for layer in range(1,len(topology)):
+        n += topology[layer] * topology[layer - 1]  # weights
+    return n
+
+def init_index_map(topology): # e.g., [784,15,10]
+    global parameter_to_index_map, first_weight_index
+    layers = len(topology)
+    parameter_to_index_map = [0]*(biases_size(topology)+weights_size(topology))
+    p = 0
+    for layer in range(1,layers):
+        for neuron in range(0,topology[layer]):
+            parameter_to_index_map[p] = (layer-1,neuron)
+            p += 1
+    first_weight_index = p
+    for layer in range(1, layers):
+        for neuron in range(0, topology[layer]):
+            for prev_neuron in range(0, topology[layer-1]):
+                parameter_to_index_map[p] = (layer - 1, neuron, prev_neuron)
+                p += 1
+    # print "last index=", p-1
+    # print '\n'.join([str(t) for t in parameter_to_index_map])
+
+
 class Network(object):
     def __init__(self, layer_sizes, mu=None, sigma=None):
         """The list ``sizes`` contains the number of neurons in the
@@ -20,7 +54,7 @@ class Network(object):
         won't set any biases for those neurons, since biases are only
         ever used in computing the outputs from later layers."""
         self.num_layers = len(layer_sizes)
-        self.sizes = layer_sizes
+        self.topology = layer_sizes
         if mu is None or sigma is None:
             self.biases = np.array([np.random.randn(y) for y in layer_sizes[1:]])
             # E.g., weights[0] is the W weight matrix between input and 1st hidden layer
@@ -39,7 +73,30 @@ class Network(object):
             self.weights = np.array(w)
             # self.weights = np.array([sigma[1] * np.random.randn(y, x)
             #                          for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
-            self.weights = np.add(self.weights, mu[1])
+            self.weights = np.add(self.weights, mu[1])\
+
+    def size(self):
+        n = 0
+        for layer in range(1,len(self.topology)):
+            n += self.topology[layer] # biases
+            n += self.topology[layer] * self.topology[layer-1] # weights
+        return n
+
+    def add_to_parameter(self, i, v):
+        if i<first_weight_index: # must be a bias
+            ij = parameter_to_index_map[i]
+            self.biases[ij[0]][ij[1]] += v
+        else:
+            ijk = parameter_to_index_map[i]
+            self.weights[ijk[0]][ijk[1]][ijk[2]] += v
+
+    def get_parameter(self, i):
+        if i<first_weight_index: # must be a bias
+            ij = parameter_to_index_map[i]
+            return self.biases[ij[0]][ij[1]]
+        else:
+            ijk = parameter_to_index_map[i]
+            return self.weights[ijk[0]][ijk[1]][ijk[2]]
 
     def feedforward(self, activations):
         """Return the output of the network if ``a`` is input."""

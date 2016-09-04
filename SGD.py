@@ -3,7 +3,7 @@ import gzip, cPickle
 from numpy import linalg as LA
 from collections import Counter
 
-from network import Network
+from network import Network, init_index_map
 
 # Load the dataset
 f = gzip.open('/Users/parrt/data/mnist.pkl.gz', 'rb')
@@ -22,6 +22,14 @@ Y = labels[0:N]
 # Make one-hot-vectors
 # Y = [onehot(lab) for lab in labels[0:N]]
 print "N =",N
+
+# init_index_map([784,15,10])
+init_index_map([784,15,10])
 net = Network([784,15,10])
 
+print net.get_parameter(20)
+net.add_to_parameter(20, 99)
+print net.get_parameter(20)
+
 c = net.cost(X, Y)
+
