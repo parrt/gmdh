@@ -36,32 +36,64 @@ class Particle:
         self.best_score = 0
     pass
 
-#initialize the particles
-particles = [Particle(Network([784,30,10])) for i in range(SWARM_SIZE)]
+def BBPSO():
+    #initialize the particles
+    particles = [Particle(Network([784,30,10])) for i in range(SWARM_SIZE)]
+    for it in range(ITERATIONS):
+        # update global best with best of all particles
+        gbest = particles[0].best
+        gbest_score = particles[0].best_score
+        for i in range(SWARM_SIZE):
+            p = particles[i]
+            if p.best_score > gbest_score:
+                gbest = p.best
+                gbest_score = p.best_score
+        print "global best score " + str(gbest_score)
 
-mu = particles[0].pos
-sigma = None
-for it in range(ITERATIONS):
-    # update global best with best of all particles
-    gbest = particles[0].best
-    gbest_score = particles[0].best_score
-    for i in range(SWARM_SIZE):
-        p = particles[i]
-        if p.best_score > gbest_score:
-            gbest = p.best
-            gbest_score = p.best_score
-    print "global best score " + str(gbest_score)
+        for i in range(SWARM_SIZE):
+            p = particles[i]
+            pmu = p.best.biases + gbest.biases, \
+                  p.best.weights + gbest.weights
+            pmu = pmu[0] / 2.0, pmu[1] / 2.0
+            psigma = np.abs(p.best.biases - gbest.biases), \
+                     np.abs(p.best.weights - gbest.weights)
+            pos = Network([784,30,10], mu=pmu, sigma=psigma)
+            p.pos = pos
+            fit = pos.fitness(X, labels)
+            if fit > p.best_score:
+                p.best = pos
+                p.best_score = fit
 
-    for i in range(SWARM_SIZE):
-        p = particles[i]
-        pmu = p.best.biases + gbest.biases, \
-              p.best.weights + gbest.weights
-        pmu = pmu[0] / 2.0, pmu[1] / 2.0
-        psigma = np.abs(p.best.biases - gbest.biases), \
-                 np.abs(p.best.weights - gbest.weights)
-        pos = Network([784,30,10], mu=pmu, sigma=psigma)
-        p.pos = pos
-        fit = pos.fitness(X, labels)
-        if fit > p.best_score:
-            p.best = pos
-            p.best_score = fit
+
+def BBPSO_cost():
+    # initialize the particles
+    particles = [Particle(Network([784, 30, 10])) for i in range(SWARM_SIZE)]
+    for p in particles: p.best_score = 1e20
+    for it in range(ITERATIONS):
+        # update global best with best of all particles
+        gbest = particles[0].best
+        gbest_score = particles[0].best_score
+        for i in range(SWARM_SIZE):
+            p = particles[i]
+            if p.best_score < gbest_score:
+                gbest = p.best
+                gbest_score = p.best_score
+        fit = gbest.fitness(X, labels)
+        print "global best score " + str(gbest_score)+" correct "+str(fit)
+
+        for i in range(SWARM_SIZE):
+            p = particles[i]
+            pmu = p.best.biases + gbest.biases, \
+                  p.best.weights + gbest.weights
+            pmu = pmu[0] / 2.0, pmu[1] / 2.0
+            psigma = np.abs(p.best.biases - gbest.biases), \
+                     np.abs(p.best.weights - gbest.weights)
+            pos = Network([784,30,10], mu=pmu, sigma=psigma)
+            p.pos = pos
+            c = pos.cost(X, labels)
+            if c < p.best_score:
+                p.best = pos
+                p.best_score = c
+
+# BBPSO()
+BBPSO_cost()

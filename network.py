@@ -31,7 +31,7 @@ class Network(object):
                                      for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
         else:
             self.biases = np.array([sigma[0][i-1] * np.random.randn(layer_sizes[i])
-                                    for i in range(1,len(layer_sizes))])
+                                    for i in range(1,self.num_layers)])
             self.biases = np.add(self.biases, mu[0])
             w = []
             for i in range(1, len(layer_sizes)):
@@ -71,7 +71,7 @@ class Network(object):
             diff = y_ - onehot(y)
             norm = LA.norm(diff)
             sum += norm * norm
-        return sum/len(X)
+        return sum #/len(X)
 
     def fitness(self,X, labels):
         MINIBATCH = len(X)
