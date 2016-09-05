@@ -17,7 +17,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 300
+N = 1000
 # N = len(images)
 X = images[0:N]
 Y = labels[0:N]
@@ -50,25 +50,35 @@ while True:
     # (f(pos+h) - f(pos-h)) / 2h
     dir = random.randint(0,num_parameters-1) # randint() is inclusive on both ends
     pos.add_to_parameter(dir, h)
-    right = pos.cost(X,Y)
+
+    MINIBATCH = 50
+    indexes = np.random.randint(0,len(X),size=MINIBATCH)
+    samples = X[indexes]
+    sample_labels = labels[indexes]
+
+    right = pos.loss(samples, sample_labels)
     pos.add_to_parameter(dir, -2*h)
-    left = pos.cost(X,Y)
+    left = pos.loss(samples, sample_labels)
     pos.add_to_parameter(dir, h)     # reset
     finite_diff = (right - left) / (2*h)
     # move position in one direction only
     pos.add_to_parameter(dir, -eta * finite_diff) # decelerates x jump as it flattens out
     # delta = Decimal(cost) - Decimal(prevcost)
 
-    cost = pos.cost(X, Y) # what is new cost
+    cost = pos.loss(samples, sample_labels) # what is new cost
     print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" %\
           (steps,cost,pos.fitness(X,Y),LA.norm(pos.weights[0][0]))
+    # print "%d: cost = %3.5f, weight norm neuron 0,0: %3.3f" %\
+    #       (steps,cost,LA.norm(pos.weights[0][0]))
+    # if steps % 200==0:
+    #     print " "*70+"%d: correct %d" % (steps,pos.fitness(X,Y))
     if cost > prevcost:
         lossratio = (cost - prevcost) / prevcost
-        print "lossratio by %3.5f" % lossratio
-        if lossratio > 0.0035: # even sigmoid seems to get these weird pop ups in energy so don't let it
+        if lossratio > 0.035: # even sigmoid seems to get these weird pop ups in energy so don't let it
+            print "lossratio by %3.5f" % lossratio
             pos.add_to_parameter(dir, eta * finite_diff)  # restore and try again
             cost = prevcost # reset cost too lest it think it hadn't jumped much next iteration
-            print "resetting"
+            # print "resetting"
 
     # stop when small change in vertical but not heading down
     # Sometimes subtraction wipes out precision and we get an actual 0.0
