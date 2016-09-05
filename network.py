@@ -90,6 +90,14 @@ class Network(object):
             ijk = parameter_to_index_map[i]
             self.weights[ijk[0]][ijk[1]][ijk[2]] += v
 
+    def set_parameter(self, i, v):
+        if i<first_weight_index: # must be a bias
+            ij = parameter_to_index_map[i]
+            self.biases[ij[0]][ij[1]] = v
+        else:
+            ijk = parameter_to_index_map[i]
+            self.weights[ijk[0]][ijk[1]][ijk[2]] = v
+
     def get_parameter(self, i):
         if i<first_weight_index: # must be a bias
             ij = parameter_to_index_map[i]
@@ -104,8 +112,8 @@ class Network(object):
             b = self.biases[layer]
             weights = self.weights[layer]
             weighted_outputs = np.dot(weights, activations) + b
-            activations = rectified_linear(weighted_outputs)
-            # activations = sigmoid(weighted_outputs) # not as good as reLU
+            # activations = rectified_linear(weighted_outputs)
+            activations = sigmoid(weighted_outputs) # not as good as reLU
         return activations
 
     def train(self, X, Y):

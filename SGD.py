@@ -2,6 +2,8 @@ import numpy as np
 import gzip, cPickle
 from numpy import linalg as LA
 from collections import Counter
+from decimal import Decimal
+import random
 
 from network import Network, init_index_map
 
@@ -15,7 +17,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 100
+N = 300
 # N = len(images)
 X = images[0:N]
 Y = labels[0:N]
@@ -25,11 +27,44 @@ print "N =",N
 
 # init_index_map([784,15,10])
 init_index_map([784,15,10])
-net = Network([784,15,10])
+pos = Network([784,15,10])
 
-print net.get_parameter(20)
-net.add_to_parameter(20, 99)
-print net.get_parameter(20)
+num_parameters = pos.size()
+print num_parameters
 
-c = net.cost(X, Y)
+# print net.get_parameter(20)
+# net.add_to_parameter(20, 99)
+# print net.get_parameter(20)
 
+precision = 0.000000000001
+eta = 3
+steps = 0
+h = 0.0001
+cost = 1e20
+
+while True:
+    steps += 1
+    # prevpos = pos
+    prevcost = cost
+    # what is cost at current location?
+    cost = pos.cost(X,Y)
+    print "cost = %3.5f, correct %d" % (cost,pos.fitness(X,Y))
+    if cost > prevcost:
+        lossratio = (cost - prevcost) / prevcost
+        print "lossratio by %3.5f" % lossratio
+    # compute finite difference for one parameter
+    # (f(pos+h) - f(pos-h)) / 2h
+    dir = random.randint(0,num_parameters-1) # randint() is inclusive on both ends
+    pos.add_to_parameter(dir, h)
+    right = pos.cost(X,Y)
+    pos.add_to_parameter(dir, -2*h)
+    left = pos.cost(X,Y)
+    pos.add_to_parameter(dir, h)     # reset
+    finite_diff = (right - left) / (2*h)
+    # move position in one direction only
+    pos.add_to_parameter(dir, -eta * finite_diff) # decelerates x jump as it flattens out
+    delta = Decimal(cost) - Decimal(prevcost)
+    # stop when small change in vertical but not heading down
+    # Sometimes subtraction wipes out precision and we get an actual 0.0
+    # if delta >= 0 and abs(delta) < precision:
+    #     break
