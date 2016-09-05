@@ -37,7 +37,7 @@ print num_parameters
 # print net.get_parameter(20)
 
 precision = 0.000000000001
-eta = 100
+eta = 30
 steps = 0
 h = 0.0001
 cost = 1e20
@@ -60,11 +60,12 @@ while True:
     # delta = Decimal(cost) - Decimal(prevcost)
 
     cost = pos.cost(X, Y) # what is new cost
-    print "%d: cost = %3.5f, correct %d" % (steps,cost,pos.fitness(X,Y))
+    print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" %\
+          (steps,cost,pos.fitness(X,Y),LA.norm(pos.weights[0][0]))
     if cost > prevcost:
         lossratio = (cost - prevcost) / prevcost
         print "lossratio by %3.5f" % lossratio
-        if lossratio > 0.005: # even sigmoid seems to get these weird pop ups in energy so don't let it
+        if lossratio > 0.0035: # even sigmoid seems to get these weird pop ups in energy so don't let it
             pos.add_to_parameter(dir, eta * finite_diff)  # restore and try again
             print "resetting"
 
