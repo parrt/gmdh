@@ -37,21 +37,15 @@ print num_parameters
 # print net.get_parameter(20)
 
 precision = 0.000000000001
-eta = 3
+eta = 100
 steps = 0
 h = 0.0001
 cost = 1e20
 
 while True:
     steps += 1
-    # prevpos = pos
     prevcost = cost
     # what is cost at current location?
-    cost = pos.cost(X,Y)
-    print "cost = %3.5f, correct %d" % (cost,pos.fitness(X,Y))
-    if cost > prevcost:
-        lossratio = (cost - prevcost) / prevcost
-        print "lossratio by %3.5f" % lossratio
     # compute finite difference for one parameter
     # (f(pos+h) - f(pos-h)) / 2h
     dir = random.randint(0,num_parameters-1) # randint() is inclusive on both ends
@@ -63,7 +57,17 @@ while True:
     finite_diff = (right - left) / (2*h)
     # move position in one direction only
     pos.add_to_parameter(dir, -eta * finite_diff) # decelerates x jump as it flattens out
-    delta = Decimal(cost) - Decimal(prevcost)
+    # delta = Decimal(cost) - Decimal(prevcost)
+
+    cost = pos.cost(X, Y) # what is new cost
+    print "%d: cost = %3.5f, correct %d" % (steps,cost,pos.fitness(X,Y))
+    if cost > prevcost:
+        lossratio = (cost - prevcost) / prevcost
+        print "lossratio by %3.5f" % lossratio
+        if lossratio > 0.005: # even sigmoid seems to get these weird pop ups in energy so don't let it
+            pos.add_to_parameter(dir, eta * finite_diff)  # restore and try again
+            print "resetting"
+
     # stop when small change in vertical but not heading down
     # Sometimes subtraction wipes out precision and we get an actual 0.0
     # if delta >= 0 and abs(delta) < precision:

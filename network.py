@@ -56,12 +56,19 @@ class Network(object):
         self.num_layers = len(layer_sizes)
         self.topology = layer_sizes
         if mu is None or sigma is None:
-            self.biases = np.array([np.random.randn(y) for y in layer_sizes[1:]])
+            # self.biases = np.array([np.random.randn(y) for y in layer_sizes[1:]])
+            # http://cs231n.github.io/neural-networks-2/ says
+            # "... common to simply use 0 bias initialization"
+            self.biases = np.array([np.zeros(y) for y in layer_sizes[1:]])
             # E.g., weights[0] is the W weight matrix between input and 1st hidden layer
             # biases[0] is the b vector of biases for 1st hidden layer
             # W[j][k] is weight from neuron k to neuron j in prior layer
             # W . a + b is output of all neurons in a layer
-            self.weights = np.array([np.random.randn(y, x)
+
+            # http://cs231n.github.io/neural-networks-2/ says to "... normalize
+            # the variance of each neuron's output to 1 by scaling its weight
+            # vector by the square root of its fan-in (i.e. its number of inputs)."
+            self.weights = np.array([np.random.randn(y, x)*np.sqrt(2.0/x)
                                      for x, y in zip(layer_sizes[:-1], layer_sizes[1:])])
         else:
             self.biases = np.array([sigma[0][i-1] * np.random.randn(layer_sizes[i])
