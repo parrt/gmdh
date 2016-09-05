@@ -176,6 +176,8 @@ def onehot(i,N=10):
 #     return [a / s for a in x]
 
 def softmax(a):
+    # from http://cs231n.github.io/linear-classify/#softmax
+    a -= np.max(a) # "shift the values of 'a' so that the highest number is 0"
     return np.exp(a) / np.sum(np.exp(a))
 
 def sigmoid(a):

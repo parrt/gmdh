@@ -67,6 +67,7 @@ while True:
         print "lossratio by %3.5f" % lossratio
         if lossratio > 0.0035: # even sigmoid seems to get these weird pop ups in energy so don't let it
             pos.add_to_parameter(dir, eta * finite_diff)  # restore and try again
+            cost = prevcost # reset cost too lest it think it hadn't jumped much next iteration
             print "resetting"
 
     # stop when small change in vertical but not heading down
