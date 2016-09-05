@@ -37,7 +37,7 @@ print num_parameters
 # print net.get_parameter(20)
 
 precision = 0.000000000001
-eta = 40
+eta = 30
 steps = 0
 h = 0.00001
 cost = 1e20
