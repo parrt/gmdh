@@ -56,18 +56,22 @@ while True:
     samples = X[indexes]
     sample_labels = labels[indexes]
 
-    right = pos.loss(samples, sample_labels)
+    right = pos.cost(samples, sample_labels)
     pos.add_to_parameter(dir, -2*h)
-    left = pos.loss(samples, sample_labels)
+    left = pos.cost(samples, sample_labels)
     pos.add_to_parameter(dir, h)     # reset
     finite_diff = (right - left) / (2*h)
     # move position in one direction only
     pos.add_to_parameter(dir, -eta * finite_diff) # decelerates x jump as it flattens out
     # delta = Decimal(cost) - Decimal(prevcost)
 
-    cost = pos.loss(samples, sample_labels) # what is new cost
+    cost = pos.cost(samples, sample_labels) # what is new cost
+    if steps % 100 == 0:
+        correct = pos.fitness(X,Y)
+    else:
+        correct = 0
     print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" %\
-          (steps,cost,pos.fitness(X,Y),LA.norm(pos.weights[0][0]))
+          (steps,cost,correct,LA.norm(pos.weights[0][0]))
     # print "%d: cost = %3.5f, weight norm neuron 0,0: %3.3f" %\
     #       (steps,cost,LA.norm(pos.weights[0][0]))
     # if steps % 200==0:
@@ -75,7 +79,7 @@ while True:
     if cost > prevcost:
         lossratio = (cost - prevcost) / prevcost
         if lossratio > 0.035: # even sigmoid seems to get these weird pop ups in energy so don't let it
-            print "lossratio by %3.5f" % lossratio
+            # print "lossratio by %3.5f" % lossratio
             pos.add_to_parameter(dir, eta * finite_diff)  # restore and try again
             cost = prevcost # reset cost too lest it think it hadn't jumped much next iteration
             # print "resetting"
