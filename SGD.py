@@ -51,15 +51,18 @@ while True:
     dir = random.randint(0,num_parameters-1) # randint() is inclusive on both ends
     pos.add_to_parameter(dir, h)
 
-    MINIBATCH = 50
+    MINIBATCH = 30
     indexes = np.random.randint(0,len(X),size=MINIBATCH)
     samples = X[indexes]
     sample_labels = labels[indexes]
 
+    save = pos.get_parameter(dir)
+    pos.add_to_parameter(dir, h)
     right = pos.cost(samples, sample_labels)
-    pos.add_to_parameter(dir, -2*h)
+    pos.set_parameter(dir, save)
+    pos.add_to_parameter(dir, -h)
     left = pos.cost(samples, sample_labels)
-    pos.add_to_parameter(dir, h)     # reset
+    pos.set_parameter(dir, save) # restore position vector
     finite_diff = (right - left) / (2*h)
     # move position in one direction only
     pos.add_to_parameter(dir, -eta * finite_diff) # decelerates x jump as it flattens out
