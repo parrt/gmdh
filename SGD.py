@@ -42,6 +42,17 @@ steps = 0
 h = 0.00001
 cost = 1e20
 
+
+def compute_finite_diff(pos):
+    save = pos.get_parameter(dir)
+    pos.add_to_parameter(dir, h)
+    right = pos.cost(samples, sample_labels)
+    pos.set_parameter(dir, save)
+    pos.add_to_parameter(dir, -h)
+    left = pos.cost(samples, sample_labels)
+    pos.set_parameter(dir, save)  # restore position vector
+    return (right - left) / (2 * h)
+
 while True:
     steps += 1
     prevcost = cost
@@ -55,18 +66,15 @@ while True:
     # compute finite difference for one parameter
     # (f(pos+h) - f(pos-h)) / 2h
     dir = random.randint(0,num_parameters-1) # randint() is inclusive on both ends
-    save = pos.get_parameter(dir)
-    pos.add_to_parameter(dir, h)
-    right = pos.cost(samples, sample_labels)
-    pos.set_parameter(dir, save)
+    finite_diff = compute_finite_diff(pos)
+    # move position in one direction
+    pos.add_to_parameter(dir, -eta * finite_diff)
 
-    pos.add_to_parameter(dir, -h)
-    left = pos.cost(samples, sample_labels)
-    pos.set_parameter(dir, save) # restore position vector
+    dir = random.randint(0,num_parameters-1) # randint() is inclusive on both ends
+    finite_diff = compute_finite_diff(pos)
+    # move position in another direction
+    pos.add_to_parameter(dir, -eta * finite_diff)
 
-    finite_diff = (right - left) / (2*h)
-    # move position in one direction only
-    pos.add_to_parameter(dir, -eta * finite_diff) # decelerates x jump as it flattens out
     # delta = Decimal(cost) - Decimal(prevcost)
 
     cost = pos.cost(samples, sample_labels) # what is new cost
