@@ -17,7 +17,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 100
+N = 1000
 # N = len(images)
 X = images[0:N]
 Y = labels[0:N]
