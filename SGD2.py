@@ -41,7 +41,7 @@ eta = 30
 steps = 0
 h = 0.00001
 cost = 1e20
-NPARTIALS = 4
+NPARTIALS = 2
 
 def compute_finite_diff(pos, d):
     save = pos.get_parameter(d)
