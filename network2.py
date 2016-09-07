@@ -28,8 +28,8 @@ def init_index_map(topology): # e.g., [784,15,10]
             for prev_neuron in range(0, topology[layer-1]+1): # include column for biases
                 parameter_to_index_map[p] = (layer - 1, neuron, prev_neuron)
                 p += 1
-    print "last index=", p-1
-    print '\n'.join([str(t) for t in parameter_to_index_map])
+    # print "last index=", p-1
+    # print '\n'.join([str(t) for t in parameter_to_index_map])
 
 
 class Network2(object):
