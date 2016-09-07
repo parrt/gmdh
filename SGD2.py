@@ -30,18 +30,18 @@ init_index_map([784,15,10])
 pos = Network2([784,15,10])
 
 num_parameters = pos.size()
-print num_parameters
-
-# print net.get_parameter(20)
-# net.add_to_parameter(20, 99)
-# print net.get_parameter(20)
+print "num parameters =", num_parameters
 
 precision = 0.000000000001
-eta = 30
+eta = 20
 steps = 0
 h = 0.00001
 cost = 1e20
 NPARTIALS = 2
+MINIBATCH = 30
+print "NPARTIALS =", NPARTIALS
+print "MINIBATCH =", MINIBATCH
+print "eta =", eta
 
 def compute_finite_diff(pos, d):
     save = pos.get_parameter(d)
@@ -58,7 +58,6 @@ while True:
     prevcost = cost
 
     # what is cost at current location?
-    MINIBATCH = 30
     indexes = np.random.randint(0,len(X),size=MINIBATCH)
     samples = X[indexes]
     sample_labels = labels[indexes]
