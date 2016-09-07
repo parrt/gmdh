@@ -17,7 +17,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 1000
+N = 100
 # N = len(images)
 X = images[0:N]
 Y = labels[0:N]
@@ -37,7 +37,7 @@ print num_parameters
 # print net.get_parameter(20)
 
 precision = 0.000000000001
-eta = 30
+eta = 20
 steps = 0
 h = 0.00001
 cost = 1e20
@@ -46,10 +46,10 @@ cost = 1e20
 def compute_finite_diff(pos):
     save = pos.get_parameter(dir)
     pos.add_to_parameter(dir, h)
-    right = pos.cost(samples, sample_labels)
+    right = pos.loss(samples, sample_labels)
     pos.set_parameter(dir, save)
     pos.add_to_parameter(dir, -h)
-    left = pos.cost(samples, sample_labels)
+    left = pos.loss(samples, sample_labels)
     pos.set_parameter(dir, save)  # restore position vector
     return (right - left) / (2 * h)
 
@@ -77,13 +77,11 @@ while True:
 
     # delta = Decimal(cost) - Decimal(prevcost)
 
-    cost = pos.cost(samples, sample_labels) # what is new cost
+    cost = pos.loss(samples, sample_labels) # what is new cost
     if steps % 100 == 0:
         correct = pos.fitness(X,Y)
-    else:
-        correct = 0
-    print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" %\
-          (steps,cost,correct,LA.norm(pos.weights[0][0]))
+        print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" % \
+              (steps, cost, correct, LA.norm(pos.weights[0][0]))
     # print "%d: cost = %3.5f, weight norm neuron 0,0: %3.3f" %\
     #       (steps,cost,LA.norm(pos.weights[0][0]))
     # if steps % 200==0:

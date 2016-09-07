@@ -150,9 +150,7 @@ class Network(object):
         sum = 0.0
         for x,y in zip(X, labels):
             activations = self.feedforward(x)
-            # activations -= np.max(activations)  # "shift the values of 'a' so that the highest number is 0"
-            # y_ = softmax(activations)
-            confidence = np.exp(activations[y]) / np.sum(np.sum(activations))
+            confidence = np.exp(activations[y]) / np.sum(np.exp(activations))
             loss_i = -np.log(confidence)
             sum += loss_i
         return sum #/len(X)

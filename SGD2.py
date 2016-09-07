@@ -26,8 +26,8 @@ Y = labels[0:N]
 print "N =",N
 
 # init_index_map([784,15,10])
-init_index_map([784,15,10])
-pos = Network2([784,15,10])
+init_index_map([784,30,10])
+pos = Network2([784,30,10])
 
 num_parameters = pos.size()
 print "num parameters =", num_parameters
