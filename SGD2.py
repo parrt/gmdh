@@ -17,7 +17,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 30
+N = 1
 # N = len(images)
 X = images[0:N]
 Y = labels[0:N]
@@ -78,7 +78,7 @@ while True:
     # delta = Decimal(cost) - Decimal(prevcost)
 
     cost = pos.cost(samples, sample_labels) # what is new cost
-    if steps % 1000 == 0:
+    if steps % 2000 == 0:
         correct = pos.fitness(X,Y)
         print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" % \
               (steps, cost, correct, LA.norm(pos.weights[0][0]))
