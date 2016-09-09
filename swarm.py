@@ -26,7 +26,7 @@ from random import random
 from math import sin, sqrt
 
 ITERATIONS = 1000
-SWARM_SIZE = 10
+SWARM_SIZE = 3
 dimensions = len(images[0])
 
 class Particle:
@@ -48,7 +48,8 @@ def BBPSO():
             if p.best_score > gbest_score:
                 gbest = p.best
                 gbest_score = p.best_score
-        print "global best score " + str(gbest_score)
+        if it % 100 == 0:
+            print str(it)+": global best score " + str(gbest_score)
 
         for i in range(SWARM_SIZE):
             p = particles[i]
@@ -65,10 +66,11 @@ def BBPSO():
                 p.best_score = fit
 
 
-def BBPSO_cost():
+def BBPSO_cost(ITERATIONS, SWARM_SIZE):
     # initialize the particles
     particles = [Particle(Network([784, 30, 10])) for i in range(SWARM_SIZE)]
     for p in particles: p.best_score = 1e20
+    gbest = None
     for it in range(ITERATIONS):
         # update global best with best of all particles
         gbest = particles[0].best
@@ -79,7 +81,8 @@ def BBPSO_cost():
                 gbest = p.best
                 gbest_score = p.best_score
         fit = gbest.fitness(X, labels)
-        print "global best score " + str(gbest_score)+" correct "+str(fit)
+        if it % 100 == 0:
+            print str(it)+": global best score " + str(gbest_score)+" correct "+str(fit)
 
         for i in range(SWARM_SIZE):
             p = particles[i]
@@ -94,6 +97,8 @@ def BBPSO_cost():
             if c < p.best_score:
                 p.best = pos
                 p.best_score = c
+    print "final best score " + str(gbest_score) + " correct " + str(fit)
+    return gbest
 
 # BBPSO()
-BBPSO_cost()
+print BBPSO_cost(700, 5)
