@@ -17,7 +17,7 @@ labels = train_set[1]
 img = images[1]
 
 # use just a few images
-N = 100
+N = 30
 # N = len(images)
 X = images[0:N]
 Y = labels[0:N]
@@ -26,18 +26,18 @@ Y = labels[0:N]
 print "N =",N
 
 # init_index_map([784,15,10])
-init_index_map([784,30,10])
-pos = Network2([784,30,10])
+init_index_map([784,15,10])
+pos = Network2([784,15,10])
 
 num_parameters = pos.size()
 print "num parameters =", num_parameters
 
 precision = 0.000000000001
-eta = 20
+eta = 40
 steps = 0
 h = 0.00001
 cost = 1e20
-NPARTIALS = 2
+NPARTIALS = 1
 MINIBATCH = 30
 print "NPARTIALS =", NPARTIALS
 print "MINIBATCH =", MINIBATCH
@@ -58,9 +58,11 @@ while True:
     prevcost = cost
 
     # what is cost at current location?
-    indexes = np.random.randint(0,len(X),size=MINIBATCH)
-    samples = X[indexes]
-    sample_labels = labels[indexes]
+    # indexes = np.random.randint(0,len(X),size=MINIBATCH)
+    # samples = X[indexes]
+    # sample_labels = labels[indexes]
+    samples = X
+    sample_labels = labels
 
     # compute finite difference for one parameter
     # (f(pos+h) - f(pos-h)) / 2h
@@ -76,7 +78,7 @@ while True:
     # delta = Decimal(cost) - Decimal(prevcost)
 
     cost = pos.cost(samples, sample_labels) # what is new cost
-    if steps % 100 == 0:
+    if steps % 1000 == 0:
         correct = pos.fitness(X,Y)
         print "%d: cost = %3.5f, correct %d, weight norm neuron 0,0: %3.3f" % \
               (steps, cost, correct, LA.norm(pos.weights[0][0]))
